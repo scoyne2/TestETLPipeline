@@ -1,9 +1,8 @@
 # Python Data Pipeline
 import pandas as pd
 import fastparquet
-
 # https://pypi.org/project/schema/
-from schema import Schema, And, Use, Optional
+import schema
 
 # Create a standard schema
 medicalInputSchema = Schema([{'first_name': And(str, len),
@@ -25,7 +24,7 @@ def transformMedicalData(df):
     # apply some basic business logic
 	return transformMedicalData
 
-def mergeMetadata(df,metadata):
+def mergeMetadata(df, metadata):
     # merge the two tables
 	return mergedData
 
@@ -38,22 +37,23 @@ def saveOutputToParquet(df):
     print "Unexpected error when saving to parquet:", sys.exc_info()[0]
         raise
 
-def checkNull(df,columnName,acceptableAmount):
+def checkNull(df,columnName, acceptableAmount):
     acceptableQuality = False
     nullPercent = df[columnName].isnull().sum()/df[columnName].count()
     if nullPercent >= acceptableAmount:
     	acceptableQuality = True
 	return acceptableQuality
+
 def main():
     # Run ETL Process
     medialclaims = extractData('fakemedicalclaims.csv', '|')
     metadata = extractData('fakemmetadata.csv', '|', 0 )
 
     # Run QA check to confirm the data can be correctly coerced to the schema
-    medicalSchemaIsValid = is_valid.validate(medicalInputSchema)
+    isMedicalSchemaValid = medialclaims.validate(medicalInputSchema)
 
     # Apply business logic to transform data and merge in metadata
-    if medicalSchemaIsValid:
+    if isMedicalSchemaValid:
     	transformedData = transformMedicalData(medialclaims)
     	mergedData = mergeMetadata(medialclaims, metadata)
 	else:
@@ -64,8 +64,11 @@ def main():
     isAgeValid = checkNull(mergedData,'age',.9)
     isGenderValid = checkNull(mergedData,'gender',1)
 
+    #Run QA check to confirm output schema is correct
+    isMedicalOutputSchemaValid = mergedData.validate(medicalOutputSchema)
+
     #TODO(scoyne): have this error identify the field causing the failure
-    if not isNameValid || not isAgeValid || not isGenderValid:
+    if not isNameValid || not isAgeValid || not isGenderValid || not isMedicalOutputSchemaValid:
         raise ValueError('The data quality for one or more columns does not meet the required threshold')
     else:
     # Save the output to parquet
