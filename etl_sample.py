@@ -31,8 +31,11 @@ def sexTransformer(sex):
 
 # Transform the data to meet a standard schema
 def transformMedicalData(df):
-    transformMedicalData = df["gender"].apply(sexTransformer)
-	return transformMedicalData
+    #TODO, how can all of these happen in a single operation?
+    df1 = df["gender"].apply(sexTransformer)
+    df2 = df1["first_name"].str.title()
+    df3 = df2["last_name"].str.title()
+	return df3
 
 def mergeMetadata(df, metadata):
     # merge the two tables
