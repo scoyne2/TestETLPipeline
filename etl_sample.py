@@ -19,9 +19,19 @@ def extractData(csvFile, sep, skiprows=1):
     df = pd.read_csv(csvFile, sep=sep, skiprows=skiprows )
     return df
 
+ # TODO split these out into a seperate class as functions
+def sexTransformer(sex):
+    switcher = {
+        "Male": "M",
+        "Female": "F",
+        1: "M",
+        2: "F"
+    }
+    return switcher.get(sex, "U")
+
 # Transform the data to meet a standard schema
 def transformMedicalData(df):
-    # apply some basic business logic
+    transformMedicalData = df["gender"].apply(sexTransformer)
 	return transformMedicalData
 
 def mergeMetadata(df, metadata):
