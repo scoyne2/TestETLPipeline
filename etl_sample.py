@@ -8,10 +8,18 @@ import schema
 medicalInputSchema = Schema([{'first_name': And(str, len),
                          'last_name': And(str, len),
 					     'age': And(Use(int), lambda n: 0 <= n <= 130),
+					     'date_of_birth': And(date, len),
+					     'incurred_date': And(date, len),
+					     'allowed_amount': And(decimal(10,2), len),
+					     'net_paid': And(decimal(10,2), len),
 					     'gender': And(str, Use(str.upper), lambda s: s in ('M', 'F', 'U'))}])
 
 medicalOutputSchema = Schema([{'full_name': And(str, len),
 					           'age': And(Use(int), lambda n: 0 <= n <= 130),
+					           'date_of_birth': And(date, len),
+					           'incurred_date': And(date, len),
+					           'allowed_amount': And(decimal(10,2), len),
+					           'net_paid': And(decimal(10,2), len),
 					           'gender': And(str, Use(str.upper), lambda s: s in ('M', 'F', 'U'))}])
 
 # Extract and Type the data from 2 csv's
