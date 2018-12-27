@@ -1,6 +1,7 @@
 # Python Data Pipeline
 import pandas as pd
 import fastparquet
+import medical_transform as mt
 # https://pypi.org/project/schema/
 import schema
 
@@ -26,31 +27,6 @@ medicalOutputSchema = Schema([{'full_name': And(str, len),
 def extractData(csvFile, sep, skiprows=1):
     df = pd.read_csv(csvFile, sep=sep, skiprows=skiprows )
     return df
-
- # TODO split these out into a seperate class as functions
-def sexTransformer(sex):
-    switcher = {
-        "Male": "M",
-        "Female": "F",
-        1: "M",
-        2: "F"
-    }
-    return switcher.get(sex, "U")
-
-# Transform the data to meet a standard schema
-def transformMedicalData(df):
-    #TODO, how can all of these happen in a single operation?
-    df = df["gender"].apply(sexTransformer)
-    df["full_name"] = df["first_name"].map(str).str.title() + df1["last_name"].str.title()
-    df['date_of_birth'] = df['date_of_birth'].dt.strftime('%Y-%m-%d')
-    df['incurred_date'] = df['incurred_date'].dt.strftime('%Y-%m-%d')
-    df['allowed_amount'] = pd.to_numeric(df["allowed_amount"])
-    df['net_paid'] = pd.to_numeric(df["net_paid"])
-	return df
-
-def mergeMetadata(df, metadata):
-    # merge the two tables
-	return mergedData
 
 def saveOutputToParquet(df):
     dataSaved = False
@@ -78,8 +54,8 @@ def main():
 
     # Apply business logic to transform data and merge in metadata
     if isMedicalSchemaValid:
-    	transformedData = transformMedicalData(medialclaims)
-    	mergedData = mergeMetadata(medialclaims, metadata)
+    	transformedData = mt.transformMedicalData(medialclaims)
+    	mergedData = mt.mergeMetadata(medialclaims, metadata)
 	else:
 		raise ValueError('The schema for medialclaims does not meet the required format')
 
