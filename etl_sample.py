@@ -8,10 +8,10 @@ import schema
 medicalInputSchema = Schema([{'first_name': And(str, len),
                          'last_name': And(str, len),
 					     'age': And(Use(int), lambda n: 0 <= n <= 130),
-					     'date_of_birth': And(date, len),
-					     'incurred_date': And(date, len),
-					     'allowed_amount': And(decimal(10,2), len),
-					     'net_paid': And(decimal(10,2), len),
+					     'date_of_birth': And(str, len),
+					     'incurred_date': And(str, len),
+					     'allowed_amount': And(str, len),
+					     'net_paid': And(str, len),
 					     'gender': And(str, Use(str.upper), lambda s: s in ('M', 'F', 'U'))}])
 
 medicalOutputSchema = Schema([{'full_name': And(str, len),
@@ -40,9 +40,13 @@ def sexTransformer(sex):
 # Transform the data to meet a standard schema
 def transformMedicalData(df):
     #TODO, how can all of these happen in a single operation?
-    df1 = df["gender"].apply(sexTransformer)
-    df2["full_name"] = df1["first_name"].map(str).str.title() + df1["last_name"].str.title()
-	return df2
+    df = df["gender"].apply(sexTransformer)
+    df["full_name"] = df["first_name"].map(str).str.title() + df1["last_name"].str.title()
+    df['date_of_birth'] = df['date_of_birth'].dt.strftime('%Y-%m-%d')
+    df['incurred_date'] = df['incurred_date'].dt.strftime('%Y-%m-%d')
+    df['allowed_amount'] = pd.to_numeric(df["allowed_amount"])
+    df['net_paid'] = pd.to_numeric(df["net_paid"])
+	return df
 
 def mergeMetadata(df, metadata):
     # merge the two tables
