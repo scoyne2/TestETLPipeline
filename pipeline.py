@@ -2,32 +2,10 @@
 import pandas as pd
 import fastparquet
 import medical_transform as mt
-# https://pypi.org/project/schema/
-import schema
+import medical_extract as me
+import medical_schemas as schema
 
-# Create a standard schema
-medicalInputSchema = Schema([{'first_name': And(str, len),
-                         'last_name': And(str, len),
-					     'age': And(Use(int), lambda n: 0 <= n <= 130),
-					     'date_of_birth': And(str, len),
-					     'incurred_date': And(str, len),
-					     'allowed_amount': And(str, len),
-					     'net_paid': And(str, len),
-					     'gender': And(str, Use(str.upper), lambda s: s in ('M', 'F', 'U'))}])
-
-medicalOutputSchema = Schema([{'full_name': And(str, len),
-					           'age': And(Use(int), lambda n: 0 <= n <= 130),
-					           'date_of_birth': And(date, len),
-					           'incurred_date': And(date, len),
-					           'allowed_amount': And(decimal(10,2), len),
-					           'net_paid': And(decimal(10,2), len),
-					           'gender': And(str, Use(str.upper), lambda s: s in ('M', 'F', 'U'))}])
-
-# Extract and Type the data from 2 csv's
-def extractData(csvFile, sep, skiprows=1):
-    df = pd.read_csv(csvFile, sep=sep, skiprows=skiprows )
-    return df
-
+#TODO split output into another file
 def saveOutputToParquet(df):
     dataSaved = False
     try:
@@ -37,6 +15,7 @@ def saveOutputToParquet(df):
     print "Unexpected error when saving to parquet:", sys.exc_info()[0]
         raise
 
+#TODO split QA into another file
 def checkNull(df,columnName, acceptableAmount):
     acceptableQuality = False
     nullPercent = df[columnName].isnull().sum()/df[columnName].count()
@@ -45,12 +24,12 @@ def checkNull(df,columnName, acceptableAmount):
 	return acceptableQuality
 
 def main():
-    # Run ETL Process
-    medialclaims = extractData('fakemedicalclaims.csv', '|')
-    metadata = extractData('fakemmetadata.csv', '|', 0 )
+    # Extract
+    medialclaims = me.extractData('fakemedicalclaims.csv', '|')
+    metadata = me.extractData('fakemmetadata.csv', '|', 0 )
 
-    # Run QA check to confirm the data can be correctly coerced to the schema
-    isMedicalSchemaValid = medialclaims.validate(medicalInputSchema)
+    # onfirm Extraction schema
+    isMedicalSchemaValid = medialclaims.schema.validate(medicalInputSchema)
 
     # Apply business logic to transform data and merge in metadata
     if isMedicalSchemaValid:
